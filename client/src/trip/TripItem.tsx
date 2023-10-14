@@ -32,6 +32,7 @@ const TripItem: React.FC<TripItemProps> = ({id, destination, cost, date, complet
             </IonCardHeader>
 
             <IonCardContent>
+                <IonChip outline={true}>${cost}</IonChip>
                 <IonChip color={completed ? "success" : "danger"} >{completed ? "Completed" : "Uncompleted"}</IonChip>
                 <br/>
                 <IonButton color="secondary">
