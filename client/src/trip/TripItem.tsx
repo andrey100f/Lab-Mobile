@@ -8,7 +8,7 @@ interface TripItemProps {
     destination: string;
     cost: number;
     date: string;
-    completed: boolean
+    completed: boolean;
 }
 
 const TripItem: React.FC<TripItemProps> = ({id, destination, cost, date, completed}) => {
