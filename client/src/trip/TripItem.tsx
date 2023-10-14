@@ -1,4 +1,7 @@
 import React from "react";
+import {getLogger} from "../utils";
+
+const log = getLogger('TripItem');
 
 interface TripItemProps {
     id?: string;
@@ -9,6 +12,7 @@ interface TripItemProps {
 }
 
 const TripItem: React.FC<TripItemProps> = ({id, destination, cost, date, completed}) => {
+    log(`render ${destination}, ${cost}, ${date}, ${completed}`);
     return (
         <div>
             <div>
