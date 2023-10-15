@@ -71,7 +71,9 @@ const populateList = () => {
 }
 
 const getAllTripItems = (request, response) => {
-    return response.status(200).json(tripItems);
+    setTimeout(() => {
+        return response.status(200).json(tripItems);
+    }, 1000);
 }
 
 const createTripItem = (request, response) => {

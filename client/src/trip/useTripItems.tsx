@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useReducer, useState} from "react";
 import {getLogger} from "../utils";
 import {TripItemProps} from "./TripItemProps";
 import {getTripItems, createTripItem} from "./tripItemApi";
@@ -15,24 +15,56 @@ export interface TripItemsProps extends TripItemsState {
     addTripItem: () => void;
 }
 
+interface ActionProps {
+    type: string;
+    payload?: any;
+}
+
+const initialState: TripItemsState = {
+    tripItems: undefined,
+    fetching: false,
+    fetchingError: undefined
+};
+
+const FETCH_TRIP_ITEMS_STARTED = 'FETCH_TRIP_ITEMS_STARTED';
+const FETCH_TRIP_ITEMS_SUCCESSFUL = 'FETCH_TRIP_ITEMS_SUCCESSFUL';
+const FETCH_TRIP_ITEMS_FAILED = 'FETCH_TRIP_ITEMS_FAILED';
+const ADD_TRIP_ITEM = 'ADD_TRIP_ITEM';
+
+const reducer: (state: TripItemsState, action: ActionProps) => TripItemsState =
+    (state, {type, payload}) => {
+        switch (type) {
+            case FETCH_TRIP_ITEMS_STARTED:
+                return {...state, fetching: true};
+            case FETCH_TRIP_ITEMS_SUCCESSFUL:
+                return {...state, tripItems: payload.tripItems, fetching: false};
+            case FETCH_TRIP_ITEMS_FAILED:
+                return {...state, fetchingError: payload.error, fetching: false};
+            case ADD_TRIP_ITEM:
+                return {...state, tripItems: payload.tripItems};
+            default:
+                return state;
+        }
+    }
+
 export const useTripItems: () => TripItemsProps = () => {
-    const [fetching, setFetching] = useState<boolean>(false);
-    const [tripItems, setTripItems] = useState<TripItemProps[]>();
-    const [fetchingError, setFetchingError] = useState<Error>();
+    const [state, dispatch] = useReducer(reducer, initialState);
+    const {tripItems, fetching, fetchingError} = state;
 
     const addTripItem = useCallback(async () => {
-        log("addTripItem - TODO");
         try {
             log("addTripItem - started");
             const tripItem = await createTripItem();
-            setTripItems(tripItems?.concat(tripItem));
+            dispatch({type: ADD_TRIP_ITEM, payload: tripItems});
+            getTripItemsEffect();
             log("addTripItem - successful");
-        } catch (error) {
+        }
+        catch (error) {
             log("addTripItem - failed");
         }
     }, [tripItems]);
 
-    useEffect(getTripItemsEffect, []);
+    useEffect(getTripItemsEffect, [dispatch]);
     log(`returns - fetching = ${fetching}. items=${JSON.stringify(tripItems)}`);
 
     return {
@@ -52,19 +84,17 @@ export const useTripItems: () => TripItemsProps = () => {
         async function fetchTripItems() {
             try {
                 log("fetchTripItems started");
-                setFetching(true);
+                dispatch({type: FETCH_TRIP_ITEMS_STARTED});
                 const tripItems = await getTripItems();
                 log("fetchTripItems successful");
                 if(!canceled) {
-                    setFetching(false);
-                    setTripItems(tripItems);
+                    dispatch({type: FETCH_TRIP_ITEMS_SUCCESSFUL, payload: {tripItems}});
                 }
             }
             catch (error) {
                 log("fetchTripItems failed");
                 if(!canceled) {
-                    setFetching(false);
-                    setFetchingError(error as Error);
+                    dispatch({type: FETCH_TRIP_ITEMS_FAILED, payload: {error}});
                 }
             }
         }
