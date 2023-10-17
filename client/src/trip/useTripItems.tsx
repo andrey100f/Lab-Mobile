@@ -56,7 +56,7 @@ export const useTripItems: () => TripItemsProps = () => {
             log("addTripItem - started");
             const tripItem = await createTripItem();
             dispatch({type: ADD_TRIP_ITEM, payload: tripItems});
-            getTripItemsEffect();
+            getTripItemsEffect(); // ? it's ok this call to function?
             log("addTripItem - successful");
         }
         catch (error) {
