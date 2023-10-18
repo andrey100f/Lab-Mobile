@@ -1,7 +1,6 @@
 import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import Home from './pages/Home';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -21,21 +20,24 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import {TripItemEdit, TripItemList} from "./trip";
+import React from "react";
+import {TripItemProvider} from "./trip/TripItemProvider";
 
 setupIonicReact();
 
 const App: React.FC = () => (
   <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
-      </IonRouterOutlet>
-    </IonReactRouter>
+      <TripItemProvider>
+        <IonReactRouter>
+          <IonRouterOutlet>
+              <Route path="/trips" component={TripItemList} exact={true} />
+              <Route exact path="/" render={() => <Redirect to="/trips" />} />
+              <Route path="/trip" component={TripItemEdit} exact={true} />
+              <Route path="/trip/:id" component={TripItemEdit} exact={true} />
+          </IonRouterOutlet>
+        </IonReactRouter>
+      </TripItemProvider>
   </IonApp>
 );
 
