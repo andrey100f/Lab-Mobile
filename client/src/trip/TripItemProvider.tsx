@@ -1,6 +1,6 @@
 import {getLogger} from "../utils";
 import {TripItemProps} from "./TripItemProps";
-import {createTripItem, getTripItems, updateTripItem} from "./tripItemApi";
+import {createTripItem, getTripItems, updateTripItem, newWebSocket} from "./tripItemApi";
 import React, {useCallback, useEffect, useReducer} from "react";
 import PropTypes from "prop-types";
 
@@ -75,6 +75,7 @@ export const TripItemProvider: React.FC<TripItemProviderProps> = ({children}) =>
     const [state, dispatch] = useReducer(reducer, initialState);
     const {tripItems, fetching, fetchingError, saving, savingError} = state;
     useEffect(getTripItemsEffect, []);
+    useEffect(wsEffect, []);
     const saveTripItem = useCallback<SaveTripItemFn>(saveTripItemCallback, []);
     const value = {tripItems, fetching, fetchingError, saving, savingError, saveTripItem};
     log("returns");
@@ -122,6 +123,26 @@ export const TripItemProvider: React.FC<TripItemProviderProps> = ({children}) =>
         catch (error) {
             log("saveTripItem failed");
             dispatch({type: SAVE_TRIP_ITEMS_FAILED, payload: {error}});
+        }
+    }
+
+    function wsEffect() {
+        let canceled = false;
+        log('wsEffect - connecting');
+        const closeWebSocket = newWebSocket(message => {
+            if (canceled) {
+                return;
+            }
+            const { event, payload: { tripItem }} = message;
+            log(`ws message, item ${event}`);
+            if (event === 'created' || event === 'updated') {
+                dispatch({ type: SAVE_TRIP_ITEMS_SUCCEEDED, payload: { tripItem } });
+            }
+        });
+        return () => {
+            log('wsEffect - disconnecting');
+            canceled = true;
+            closeWebSocket();
         }
     }
 };

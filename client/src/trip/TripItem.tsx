@@ -31,14 +31,6 @@ const TripItem: React.FC<TripItemPropsExt> = ({id, destination, cost, date, comp
             <IonCardContent>
                 <IonChip outline={true}>${cost}</IonChip>
                 <IonChip color={completed ? "success" : "danger"} >{completed ? "Completed" : "Uncompleted"}</IonChip>
-                {/*<IonChip color="secondary" onClick={() => onEdit(id)}>*/}
-                {/*    <IonIcon slot="start" icon={pencil}></IonIcon>*/}
-                {/*    Update*/}
-                {/*</IonChip>*/}
-                {/*<IonChip color="danger">*/}
-                {/*    <IonIcon slot="start" icon={trash}></IonIcon>*/}
-                {/*    Remove*/}
-                {/*</IonChip>*/}
             </IonCardContent>
         </IonCard>
     );

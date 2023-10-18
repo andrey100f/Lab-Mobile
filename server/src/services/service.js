@@ -1,10 +1,13 @@
 const Validator = require("../domain/validator.js");
 const TripItem = require("../domain/tripItem.js");
 
+const WebSocket = require("ws");
+
 class Service {
-    constructor() {
+    constructor(wss) {
         this.tripItems = [];
         this.validator = new Validator();
+        this.wss = wss;
     }
 
     formatDate(date) {
@@ -49,6 +52,7 @@ class Service {
         this.tripItems.push(tripItem);
 
         setTimeout(() => {
+            this.broadcast({ event: 'created', payload: { tripItem } });
             return response.status(200).json(tripItem);
         }, 1000);
     }
@@ -64,12 +68,22 @@ class Service {
                 }
             }
 
-            return response.status(200).json(tripItem);
+            setTimeout(() => {
+                this.broadcast({ event: 'updated', payload: { tripItem } });
+                return response.status(200).json(tripItem);
+            }, 1000);
         }
         catch (error) {
             return response.status(500).json({error: error.message});
         }
     }
+
+    broadcast = data =>
+        this.wss.clients.forEach(client => {
+            if(client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(data));
+            }
+        })
 }
 
 module.exports = Service;

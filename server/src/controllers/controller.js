@@ -1,11 +1,10 @@
 const express = require("express");
-const Service = require("../services/service.js");
 const router = express.Router();
 
 class Controller {
     constructor(service) {
         this.service = service;
-        this.router = express.Router();
+        this.router = router;
     }
 
     setRouter() {
