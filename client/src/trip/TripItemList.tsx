@@ -12,13 +12,14 @@ import {
 import TripItem from "./TripItem";
 import {getLogger} from "../utils";
 import {add} from "ionicons/icons";
-import {useTripItems} from "./useTripItems";
-import React from "react";
+import React, {useContext} from "react";
+import {RouteComponentProps} from "react-router";
+import {TripItemContext} from "./TripItemProvider";
 
 const log = getLogger('TripItemList');
 
-const TripItemList: React.FC = () => {
-   const {tripItems, fetching, fetchingError, addTripItem} = useTripItems();
+const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
+   const {tripItems, fetching, fetchingError} = useContext(TripItemContext);
     log("render");
 
     return (
@@ -34,7 +35,8 @@ const TripItemList: React.FC = () => {
                 {tripItems && (
                     <IonList>
                         {tripItems.map(({id, destination, cost, date, completed}) =>
-                            <TripItem key={id} destination={destination} cost={cost} date={date} completed={completed} /> )}
+                            <TripItem key={id} id={id} destination={destination} cost={cost} date={date} completed={completed}
+                            onEdit={id => history.push(`/trip/${id}`)}/> )}
                     </IonList>
                 )}
 
@@ -43,7 +45,7 @@ const TripItemList: React.FC = () => {
                 )}
 
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
-                    <IonFabButton onClick={addTripItem}>
+                    <IonFabButton onClick={() => history.push('/trip')}>
                         <IonIcon icon={add} />
                     </IonFabButton>
                 </IonFab>

@@ -1,4 +1,3 @@
-const uuid = require("uuid");
 const Validator = require("../domain/validator.js");
 const TripItem = require("../domain/tripItem.js");
 
@@ -8,24 +7,27 @@ class Service {
         this.validator = new Validator();
     }
 
+    formatDate(date) {
+        let day = date.getDate();
+        let month = date.getMonth() + 1;
+        let year = date.getFullYear();
+        return day + "-" + month + "-" + year;
+    }
+
     getTripItemValues = () => {
         let destinations = ["Bali, Indonesia", "Santorini, Greece", "New York City, USA", "Tokyo, Japan",
             "Sydney, Australia", "Rome, Italy", "Cancun, Mexico", "Cape Town, South Africa", "Paris, France",
             "Bangkok, Thailand"];
         let completedValues = [true, false];
 
-        let id = uuid.v4();
         let destination = destinations[Math.floor(Math.random() * 10)];
         let cost = Math.floor(Math.random() * 1000);
         let completed = completedValues[Math.floor(Math.random() * 2)];
 
         let date = new Date();
-        let day = date.getDate();
-        let month = date.getMonth();
-        let year = date.getFullYear();
-        let formattedDate = day + "-" + month + "-" + year;
+        let formattedDate = this.formatDate(date);
 
-        return new TripItem(id, destination, cost, formattedDate, completed);
+        return new TripItem(destination, cost, formattedDate, completed);
     }
 
     populateList = () => {
@@ -42,19 +44,22 @@ class Service {
     }
 
     createTripItem = (request, response) => {
-        const tripItem = this.getTripItemValues();
+        const {destination, cost, date, completed} = request.body;
+        const tripItem = new TripItem(destination, cost, date, completed);
         this.tripItems.push(tripItem);
 
-        return response.status(200).json(tripItem);
+        setTimeout(() => {
+            return response.status(200).json(tripItem);
+        }, 1000);
     }
 
     updateTripItem = (request, response) => {
         const tripItem = request.body;
         try {
             this.validator.validateTripItem(tripItem);
-            for(let trip in this.tripItems) {
-                if(trip.id === tripItem.id) {
-                    trip = tripItem;
+            for(let i = 0; i < this.tripItems.length; i++) {
+                if(this.tripItems[i].id === tripItem.id) {
+                    this.tripItems[i] = tripItem;
                     break;
                 }
             }

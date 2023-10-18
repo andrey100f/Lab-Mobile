@@ -1,4 +1,4 @@
-import React from "react";
+import React, {memo} from "react";
 import {getLogger} from "../utils";
 import {
     IonButton,
@@ -11,21 +11,18 @@ import {
     IonIcon
 } from "@ionic/react";
 import {pencil, trash} from "ionicons/icons";
+import {TripItemProps} from "./TripItemProps";
 
-const log = getLogger('TripItem');
+const log = getLogger("TripItem");
 
-interface TripItemProps {
-    id?: string;
-    destination: string;
-    cost: number;
-    date: string;
-    completed: boolean;
+interface TripItemPropsExt extends TripItemProps {
+    onEdit: (id?: string) => void;
 }
 
-const TripItem: React.FC<TripItemProps> = ({id, destination, cost, date, completed}) => {
+const TripItem: React.FC<TripItemPropsExt> = ({id, destination, cost, date, completed, onEdit}) => {
     log(`render ${destination}, ${cost}, ${date}, ${completed}`);
     return (
-        <IonCard>
+        <IonCard onClick={() => onEdit(id)}>
             <IonCardHeader>
                 <IonCardTitle>{destination}</IonCardTitle>
                 <IonCardSubtitle>{date}</IonCardSubtitle>
@@ -34,18 +31,17 @@ const TripItem: React.FC<TripItemProps> = ({id, destination, cost, date, complet
             <IonCardContent>
                 <IonChip outline={true}>${cost}</IonChip>
                 <IonChip color={completed ? "success" : "danger"} >{completed ? "Completed" : "Uncompleted"}</IonChip>
-                <br/>
-                <IonButton color="secondary">
-                    <IonIcon slot="start" icon={pencil}></IonIcon>
-                    Update
-                </IonButton>
-                <IonButton color="danger">
-                    <IonIcon slot="start" icon={trash}></IonIcon>
-                    Remove
-                </IonButton>
+                {/*<IonChip color="secondary" onClick={() => onEdit(id)}>*/}
+                {/*    <IonIcon slot="start" icon={pencil}></IonIcon>*/}
+                {/*    Update*/}
+                {/*</IonChip>*/}
+                {/*<IonChip color="danger">*/}
+                {/*    <IonIcon slot="start" icon={trash}></IonIcon>*/}
+                {/*    Remove*/}
+                {/*</IonChip>*/}
             </IonCardContent>
         </IonCard>
     );
 };
 
-export default TripItem;
+export default memo(TripItem);
