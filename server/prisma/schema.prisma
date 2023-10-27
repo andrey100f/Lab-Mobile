@@ -1,0 +1,31 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+  schemas  = ["tma_schema"]
+}
+
+model trips {
+  tripId      String   @id(map: "PK__trips__303EBF858102D264") @default(dbgenerated("newid()"), map: "DF__trips__tripId__3C69FB99") @db.UniqueIdentifier
+  userId      String   @db.UniqueIdentifier
+  destination String   @db.VarChar(255)
+  cost        Int
+  tripDate    DateTime @db.Date
+  completed   String   @db.VarChar(255)
+  users       users    @relation(fields: [userId], references: [userId], onDelete: Cascade, map: "FK_users_trips")
+
+  @@schema("tma_schema")
+}
+
+model users {
+  userId   String  @id(map: "PK__users__CB9A1CFFBC9BFE46") @default(dbgenerated("newid()"), map: "DF__users__userId__398D8EEE") @db.UniqueIdentifier
+  username String  @unique(map: "UQ__users__F3DBC57211C0D857") @db.VarChar(255)
+  password String  @unique(map: "UQ__users__6E2DBEDE83E72A4D") @db.VarChar(255)
+  trips    trips[]
+
+  @@schema("tma_schema")
+}

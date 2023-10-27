@@ -1,5 +1,4 @@
 import {getLogger} from "../utils";
-import {formatDate} from "../utils";
 import {TripItemContext} from "./TripItemProvider";
 import {TripItemProps} from "./TripItemProps";
 import {RouteComponentProps} from "react-router";
@@ -26,15 +25,15 @@ const TripItemEdit: React.FC<TripItemEditProps> = ({history, match}) => {
     const {tripItems, saving, savingError, saveTripItem} = useContext(TripItemContext);
     const [destination, setDestination] = useState('');
     const [cost, setCost] = useState(0);
-    const [completed, setCompleted] = useState(false);
-    const [date, setDate] = useState('');
+    const [completed, setCompleted] = useState("");
+    const [tripDate, setTripDate] = useState('');
     const [tripItem, setTripItem] = useState<TripItemProps>();
 
     useEffect(() => {
         log('useEffect');
 
         const routeId = match.params.id || '';
-        const tripItem = tripItems?.find(it => it.id === routeId);
+        const tripItem = tripItems?.find(it => it.tripId === routeId);
 
         setTripItem(tripItem);
 
@@ -42,14 +41,14 @@ const TripItemEdit: React.FC<TripItemEditProps> = ({history, match}) => {
             setDestination(tripItem.destination);
             setCost(tripItem.cost);
             setCompleted(tripItem.completed);
-            setDate(tripItem.date);
+            setTripDate(tripItem.tripDate);
         }
     }, [match.params.id, tripItems]);
 
     const handleSave = useCallback(() => {
-        const editedTripItem = tripItem ? {...tripItem, destination, cost, completed, date} : {destination, cost, completed, date};
+        const editedTripItem = tripItem ? {...tripItem, destination, cost, completed, tripDate} : {destination, cost, completed, tripDate};
         saveTripItem && saveTripItem(editedTripItem).then(() => history.goBack());
-    }, [tripItem, saveTripItem, destination, cost, completed, date, history]);
+    }, [tripItem, saveTripItem, destination, cost, completed, tripDate, history]);
 
     log('render');
 
@@ -74,14 +73,15 @@ const TripItemEdit: React.FC<TripItemEditProps> = ({history, match}) => {
                 <span className="ion-margin">Pick the date</span>
                 <IonDatetimeButton datetime="datetime"></IonDatetimeButton>
                 <IonModal keepContentsMounted={true}>
-                    <IonDatetime id="datetime" presentation="date" onIonChange={e => setDate(formatDate(e.detail.value?.toString() || ''))}>
+                    <IonDatetime id="datetime" presentation="date" value={tripDate}
+                                 onIonChange={e => setTripDate(e.detail.value?.toString() || '')}>
                     </IonDatetime>
                 </IonModal>
 
                 <p className="ion-margin">Pick if the trip is completed or not</p>
-                <IonRadioGroup value={completed} onIonChange={e => setCompleted(e.detail.value)}>
-                    <IonRadio className="ion-margin" value={true} labelPlacement="end">Yes</IonRadio>
-                    <IonRadio className="ion-margin" value={false} labelPlacement="end">No</IonRadio>
+                <IonRadioGroup value={completed.toString()} onIonChange={e => setCompleted(e.detail.value)}>
+                    <IonRadio className="ion-margin" value="true" labelPlacement="end">Yes</IonRadio>
+                    <IonRadio className="ion-margin" value="false" labelPlacement="end">No</IonRadio>
                 </IonRadioGroup>
 
                 <IonLoading isOpen={saving} />

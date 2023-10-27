@@ -40,7 +40,7 @@ export const createTripItem: (tripItem: TripItemProps) => Promise<TripItemProps[
 }
 
 export const updateTripItem: (tripItem: TripItemProps) => Promise<TripItemProps[]> = tripItem => {
-    return withLogs(axios.put(`${tripItemUrl}/${tripItem.id}`, tripItem, config), 'updateTripItem');
+    return withLogs(axios.put(`${tripItemUrl}/${tripItem.tripId}`, tripItem, config), 'updateTripItem');
 }
 
 interface MessageData {

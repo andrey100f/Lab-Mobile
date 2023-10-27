@@ -10,7 +10,7 @@ import {
     IonToolbar
 } from "@ionic/react";
 import TripItem from "./TripItem";
-import {getLogger} from "../utils";
+import {getLogger, formatDate} from "../utils";
 import {add} from "ionicons/icons";
 import React, {useContext} from "react";
 import {RouteComponentProps} from "react-router";
@@ -34,9 +34,9 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
                 <IonLoading isOpen={fetching} message="Fetching Items" />
                 {tripItems && (
                     <IonList>
-                        {tripItems.map(({id, destination, cost, date, completed}) =>
-                            <TripItem key={id} id={id} destination={destination} cost={cost} date={date} completed={completed}
-                            onEdit={id => history.push(`/trip/${id}`)}/> )}
+                        {tripItems.map(({tripId, destination, cost, tripDate, completed}) =>
+                            <TripItem key={tripId} tripId={tripId} destination={destination} cost={cost} tripDate={formatDate(tripDate)} completed={completed}
+                            onEdit={tripId => history.push(`/trip/${tripId}`)}/> )}
                     </IonList>
                 )}
 

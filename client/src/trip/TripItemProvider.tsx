@@ -48,7 +48,7 @@ const reducer: (state: TripItemState, action: ActionProps) => TripItemState =
             case SAVE_TRIP_ITEMS_SUCCEEDED:
                 const tripItems = [...(state.tripItems || [])];
                 const tripItem = payload.tripItem;
-                const index = tripItems.findIndex(it => it.id === tripItem.id);
+                const index = tripItems.findIndex(it => it.tripId === tripItem.tripId);
 
                 if(index === -1) {
                     tripItems.splice(0, 0, tripItem);
@@ -116,7 +116,8 @@ export const TripItemProvider: React.FC<TripItemProviderProps> = ({children}) =>
         try {
             log("saveTripItem started");
             dispatch({type: SAVE_TRIP_ITEMS_STARTED});
-            const savedTripItem = await(tripItem.id ? updateTripItem(tripItem): createTripItem(tripItem));
+            log(tripItem.tripId)
+            const savedTripItem = await(tripItem.tripId ? updateTripItem(tripItem): createTripItem(tripItem));
             log("saveTripItem succeeded");
             dispatch({type: SAVE_TRIP_ITEMS_SUCCEEDED, payload: {tripItem: savedTripItem}});
         }
