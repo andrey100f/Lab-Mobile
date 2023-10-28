@@ -1,4 +1,4 @@
-import {getLogger} from "../utils";
+import {formatDate, getLogger} from "../utils";
 import {TripItemContext} from "./TripItemProvider";
 import {TripItemProps} from "./TripItemProps";
 import {RouteComponentProps} from "react-router";
@@ -26,7 +26,7 @@ const TripItemEdit: React.FC<TripItemEditProps> = ({history, match}) => {
     const [destination, setDestination] = useState('');
     const [cost, setCost] = useState(0);
     const [completed, setCompleted] = useState("");
-    const [tripDate, setTripDate] = useState('');
+    const [tripDate, setTripDate] = useState(new Date().toISOString());
     const [tripItem, setTripItem] = useState<TripItemProps>();
 
     useEffect(() => {

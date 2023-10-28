@@ -23,22 +23,26 @@ import './theme/variables.css';
 import {TripItemEdit, TripItemList} from "./trip";
 import React from "react";
 import {TripItemProvider} from "./trip/TripItemProvider";
+import {AuthProvider, Login, PrivateRoute} from "./auth";
 
 setupIonicReact();
 
 const App: React.FC = () => (
-  <IonApp>
-      <TripItemProvider>
+    <IonApp>
         <IonReactRouter>
-          <IonRouterOutlet>
-              <Route path="/trips" component={TripItemList} exact={true} />
-              <Route exact path="/" render={() => <Redirect to="/trips" />} />
-              <Route path="/trip" component={TripItemEdit} exact={true} />
-              <Route path="/trip/:id" component={TripItemEdit} exact={true} />
-          </IonRouterOutlet>
+            <IonRouterOutlet>
+                <AuthProvider>
+                    <Route path="/login" component={Login} exact={true} />
+                    <TripItemProvider>
+                        <PrivateRoute path="/trips" component={TripItemList} exact={true} />
+                        <PrivateRoute path="/trip" component={TripItemEdit} exact={true} />
+                        <PrivateRoute path="/trip/:id" component={TripItemEdit} exact={true} />
+                    </TripItemProvider>
+                    <Route exact path="/" render={() => <Redirect to="/trips" />}/>
+                </AuthProvider>
+            </IonRouterOutlet>
         </IonReactRouter>
-      </TripItemProvider>
-  </IonApp>
+    </IonApp>
 );
 
 export default App;

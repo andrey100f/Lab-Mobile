@@ -1,13 +1,21 @@
 const router = require("express").Router();
-const TripItemService = require("../services/TripService");
 
-router.get("/", TripItemService.getAllTripItems);
-// router.get("/:userId", TripItemService.getTripItemsByUserId);
-// router.get("/:userId/:tripId", TripItemService.getTripItemById);
-// router.patch("/:userId/:tripId", TripItemService.updateTripItem);
-// router.post("/:userId", TripItemService.createTripItem);
-router.put("/:tripId", TripItemService.updateTripItem);
-router.post("/", TripItemService.createTripItem);
-router.get("/:tripId", TripItemService.getTripItemById);
+class TripItemController {
+    constructor(tripItemService) {
+        this.tripItemService = tripItemService;
+        this.router = router;
+    }
 
-module.exports = router;
+    setRouter = () => {
+        // this.router.get("/", this.tripItemService.getAllTripItems);
+        this.router.get("/", this.tripItemService.getTripItemsByUserId);
+        this.router.get("/:tripId", this.tripItemService.getTripItemById);
+        this.router.put("/:tripId", this.tripItemService.updateTripItem);
+        this.router.post("/", this.tripItemService.createTripItem);
+        // this.router.put("/:tripId", this.tripItemService.updateTripItem);
+        // this.router.post("/", this.tripItemService.createTripItem);
+        // this.router.get("/:tripId", this.tripItemService.getTripItemById);
+    }
+}
+
+module.exports = TripItemController;

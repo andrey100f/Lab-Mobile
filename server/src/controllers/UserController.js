@@ -1,6 +1,14 @@
 const router = require("express").Router();
-const UserService = require("../services/UserService");
 
-router.post("/login", UserService.loginUser);
+class UserController {
+    constructor(userService) {
+        this.userService = userService;
+        this.router = router;
+    }
 
-module.exports = router;
+    setRouter = () => {
+        this.router.post("/login", this.userService.loginUser);
+    }
+}
+
+module.exports = UserController;

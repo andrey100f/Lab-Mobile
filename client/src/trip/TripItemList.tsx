@@ -20,6 +20,7 @@ const log = getLogger('TripItemList');
 
 const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
    const {tripItems, fetching, fetchingError} = useContext(TripItemContext);
+   log(fetching);
     log("render");
 
     return (
