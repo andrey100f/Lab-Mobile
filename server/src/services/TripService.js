@@ -30,22 +30,22 @@ class TripItemService {
     getTripItemsByUserId = async (req, res) => {
         try {
             const token = req.headers.authorization.split(' ')[1];
-
-            const decodedToken = jwt.verify(token, jwtConfig.secret);
-
-            const userId = decodedToken.userId;
+            const userId = jwtConfig.getUserIdFromToken(token);
 
             const tripItems = await prisma.trips.findMany({
                 where: {
                     userId: userId
-                }
+                },
             });
 
             if(!tripItems) {
                 return res.status(404).json({message: "Trips not found..."});
             }
 
-            return res.status(200).json(tripItems);
+            setTimeout(() => {
+                return res.status(200).json(tripItems);
+            }, 1000);
+
         }
         catch (err) {
             return res.status(400).json({message: err.message});
@@ -75,8 +75,7 @@ class TripItemService {
 
     createTripItem = async (req, res) => {
         const token = req.headers.authorization.split(' ')[1];
-        const decodedToken = jwt.verify(token, jwtConfig.secret);
-        const userId = decodedToken.userId;
+        const userId = jwtConfig.getUserIdFromToken(token);
 
         const tripId = req.params.tripId;
         const {destination, cost, tripDate, completed} = req.body;
@@ -97,14 +96,14 @@ class TripItemService {
         setTimeout(() => {
             this.broadcast({ event: 'created', payload: { tripItem } });
             return res.status(200).json(tripItem);
-        });
+        }, 1000);
     }
 
     updateTripItem = async (req, res) => {
         try {
             const token = req.headers.authorization.split(' ')[1];
 
-            const decodedToken = jwt.verify(token, jwtConfig.secret);
+            const decodedToken = jwt.verify(token, jwtConfig.jwtConfig.secret);
             const userId = decodedToken.userId;
 
             const tripId = req.params.tripId;

@@ -1,4 +1,4 @@
-import React, {useCallback, useContext, useEffect, useReducer} from "react";
+import React, {useCallback, useContext, useEffect, useReducer, useState} from "react";
 import PropTypes from "prop-types";
 import {getLogger} from "../utils";
 import {TripItemProps} from "./TripItemProps";
@@ -41,7 +41,7 @@ const reducer: (state: TripItemState, action: ActionProps) => TripItemState =
             case FETCH_TRIP_ITEMS_STARTED:
                 return { ...state, fetching: true, fetchingError: null };
             case FETCH_TRIP_ITEMS_SUCCEEDED:
-                return { ...state, tripItems: payload.tripItems, fetching: false, saving: false };
+                return { ...state, tripItems: payload.tripItems, fetching: false };
             case FETCH_TRIP_ITEMS_FAILED:
                 return { ...state, fetchingError: payload.error, fetching: false };
             case SAVE_TRIP_ITEMS_STARTED:
@@ -51,14 +51,13 @@ const reducer: (state: TripItemState, action: ActionProps) => TripItemState =
                 const tripItem = payload.tripItem;
                 const index = tripItems.findIndex(it => it.tripId === tripItem.tripId);
 
-                if(index === -1) {
+                if (index === -1) {
                     tripItems.splice(0, 0, tripItem);
-                }
-                else {
+                } else {
                     tripItems[index] = tripItem;
                 }
 
-                return { ...state, tripItems, saving: false, fetching: false };
+                return { ...state, tripItems, saving: false };
             case SAVE_TRIP_ITEMS_FAILED:
                 return { ...state, savingError: payload.error, saving: false };
             default:
@@ -78,7 +77,7 @@ export const TripItemProvider: React.FC<TripItemProviderProps> = ({children}) =>
     const {tripItems, fetching, fetchingError, saving, savingError} = state;
 
     useEffect(getTripItemsEffect, [token]);
-    useEffect(wsEffect, []);
+    useEffect(wsEffect, [token]);
 
     const saveTripItem = useCallback<SaveTripItemFn>(saveTripItemCallback, [token]);
     const value = {tripItems, fetching, fetchingError, saving, savingError, saveTripItem};
@@ -104,9 +103,11 @@ export const TripItemProvider: React.FC<TripItemProviderProps> = ({children}) =>
 
         async function fetchTripItems() {
             try {
+
                 log("fetchTripItems started");
 
                 dispatch({type: FETCH_TRIP_ITEMS_STARTED});
+
                 const tripItems = await getTripItems(token);
 
                 log("fetchTripItems succeeded");
@@ -134,6 +135,7 @@ export const TripItemProvider: React.FC<TripItemProviderProps> = ({children}) =>
 
             log("saveTripItem succeeded");
             dispatch({type: SAVE_TRIP_ITEMS_SUCCEEDED, payload: {tripItem: savedTripItem}});
+            getTripItemsEffect();
         }
         catch (error) {
             log("saveTripItem failed");

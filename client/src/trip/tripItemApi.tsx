@@ -5,7 +5,7 @@ import {TripItemProps} from "./TripItemProps"
 const tripItemUrl = `http://${baseUrl}/trips`;
 const socketUrl = `localhost:8080`;
 
-export const getTripItems: (token: string) => Promise<TripItemProps[]> = token => {
+export const getTripItems: (token: string) => Promise<TripItemProps[]> = (token) => {
     return withLogs(axios.get(tripItemUrl, authConfig(token)), "getTripItems");
 }
 

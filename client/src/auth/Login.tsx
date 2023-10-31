@@ -69,7 +69,7 @@ export const Login: React.FC<RouteComponentProps> = ({history}) => {
                         <IonLabel position="floating">Password</IonLabel>
                         <IonInput value={password} onIonChange={handlePasswordChange}/>
                     </IonItem>
-                    <IonButton className="ion-margin-top" expand="block" onClick={handleLogin}>Login</IonButton>
+                    <IonButton className="ion-margin-top" expand="block" shape="round" fill="outline" onClick={handleLogin}>Login</IonButton>
                 </div>
                 <IonLoading isOpen={isAuthenticating} />
 

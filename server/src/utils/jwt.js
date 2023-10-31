@@ -1,3 +1,13 @@
+const jwt = require("jsonwebtoken");
+
 const jwtConfig = {secret: "my-secret"};
 
-module.exports = jwtConfig;
+const getUserIdFromToken = (token) => {
+    const decodedToken = jwt.verify(token, jwtConfig.secret);
+    return decodedToken.userId;
+}
+
+module.exports = {
+    jwtConfig,
+    getUserIdFromToken
+};
