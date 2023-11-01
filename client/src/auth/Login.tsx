@@ -9,11 +9,13 @@ import {
     IonItem, IonLabel,
     IonLoading,
     IonPage,
-    IonTitle,
+    IonTitle, IonToast,
     IonToolbar
 } from '@ionic/react';
 import {AuthContext} from "./authProvider";
 import {getLogger} from "../utils";
+import {usePreferences} from "../utils/usePreferences";
+import {getTripItems} from "../trip/tripItemApi";
 
 const log = getLogger("Login");
 
@@ -23,9 +25,22 @@ interface LoginState {
 }
 
 export const Login: React.FC<RouteComponentProps> = ({history}) => {
+    const {get} = usePreferences();
     const {isAuthenticated, isAuthenticating, login, authenticationError} = useContext(AuthContext);
     const [state, setState] = useState<LoginState>({});
     const {username, password} = state;
+
+    const [token, setToken] = useState("");
+
+    useEffect(() => {
+        const getToken = async () => {
+            const result = await get("loginToken");
+            setToken(result!);
+        };
+
+        getToken();
+    }, []);
+
 
     const handlePasswordChange = useCallback((e: any) => setState({
         ...state,
@@ -40,16 +55,33 @@ export const Login: React.FC<RouteComponentProps> = ({history}) => {
     const handleLogin = useCallback(() => {
         log("handleLogIn...");
         login?.(username, password);
-    }, [username, password]);
+        window.location.href = "/trips";
+    }, [username, password, token]);
 
     log("render");
 
+    // useEffect(() => {
+    //     if(isAuthenticated) {
+    //         log("redirecting to home");
+    //         history.push("/");
+    //     }
+    // }, [isAuthenticated]);
+
     useEffect(() => {
-        if(isAuthenticated) {
+        if(isAuthenticated || token !== "") {
             log("redirecting to home");
             history.push("/");
         }
-    }, [isAuthenticated]);
+    }, [isAuthenticated, token]);
+
+    // const useTokenEffect = () => {
+    //     if(isAuthenticated || token !== "") {
+    //         log("redirecting to home");
+    //         history.push("/");
+    //     }
+    // }
+    //
+    // useEffect(useTokenEffect, [token, isAuthenticated]);
 
     return (
         <IonPage>
@@ -74,7 +106,8 @@ export const Login: React.FC<RouteComponentProps> = ({history}) => {
                 <IonLoading isOpen={isAuthenticating} />
 
                 {authenticationError && (
-                    <div>{authenticationError.message || "Failed to authenticate"}</div>
+                    <IonToast isOpen={true} className="ion-color-danger" duration={2000}
+                              message={authenticationError.message || "Failed to authenticate"} ></IonToast>
                 )}
             </IonContent>
         </IonPage>

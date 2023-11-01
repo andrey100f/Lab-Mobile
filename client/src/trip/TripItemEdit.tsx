@@ -11,9 +11,11 @@ import {
     IonHeader,
     IonInput, IonLoading, IonModal,
     IonPage, IonRadio, IonRadioGroup,
-    IonTitle,
+    IonTitle, IonToast,
     IonToolbar
 } from "@ionic/react";
+import {useNetwork} from "../utils/useNetwork";
+import {usePreferences} from "../utils/usePreferences";
 
 const log = getLogger('tripItemEdit');
 
@@ -22,7 +24,19 @@ interface TripItemEditProps extends RouteComponentProps<{
 }> {}
 
 const TripItemEdit: React.FC<TripItemEditProps> = ({history, match}) => {
-    const {tripItems, saving, savingError, saveTripItem} = useContext(TripItemContext);
+    const {networkStatus} = useNetwork();
+    const {get} = usePreferences();
+    const [tripItems, setTripItems] = useState<TripItemProps[]>([]);
+    useEffect(() => {
+        const getTripItems = async () => {
+            const result = await get("tripItems");
+            setTripItems(JSON.parse(result!));
+        };
+
+        getTripItems();
+    }, []);
+
+    const {saving, savingError, saveTripItem} = useContext(TripItemContext);
     const [destination, setDestination] = useState('');
     const [cost, setCost] = useState(0);
     const [completed, setCompleted] = useState("");
@@ -45,10 +59,20 @@ const TripItemEdit: React.FC<TripItemEditProps> = ({history, match}) => {
         }
     }, [match.params.id, tripItems]);
 
-    const handleSave = useCallback(() => {
+    // const handleSave = useCallback(() => {
+    //     const editedTripItem = tripItem ? {...tripItem, destination, cost, completed, tripDate} : {destination, cost, completed, tripDate};
+    //     saveTripItem && saveTripItem(editedTripItem).then(() => history.goBack());
+    // }, [tripItem, saveTripItem, destination, cost, completed, tripDate, history]);
+
+    const handleSave = () => {
         const editedTripItem = tripItem ? {...tripItem, destination, cost, completed, tripDate} : {destination, cost, completed, tripDate};
-        saveTripItem && saveTripItem(editedTripItem).then(() => history.goBack());
-    }, [tripItem, saveTripItem, destination, cost, completed, tripDate, history]);
+        if(networkStatus) {
+            saveTripItem && saveTripItem(editedTripItem).then(() => history.goBack());
+        }
+        else {
+            history.goBack();
+        }
+    }
 
     log('render');
 
@@ -86,7 +110,8 @@ const TripItemEdit: React.FC<TripItemEditProps> = ({history, match}) => {
 
                 <IonLoading isOpen={saving} />
                 {savingError && (
-                    <div>{savingError.message || 'Failed to save item'}</div>
+                    <IonToast isOpen={true} className="ion-color-danger" position="bottom" duration={2000}
+                              message={"Updates saved locally"} ></IonToast>
                 )}
             </IonContent>
         </IonPage>

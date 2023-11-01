@@ -1,13 +1,11 @@
-const WebSocket = require("ws");
-
 const {PrismaClient} = require("@prisma/client");
 const jwt = require("jsonwebtoken");
 const jwtConfig = require("../utils/jwt");
 const prisma = new PrismaClient();
 
 class TripItemService {
-    constructor(wss) {
-        this.wss = wss;
+    constructor(socket) {
+        this.socket = socket;
     }
 
     getAllTripItems = async (req, res) => {
@@ -94,7 +92,7 @@ class TripItemService {
         });
 
         setTimeout(() => {
-            this.broadcast({ event: 'created', payload: { tripItem } });
+            this.socket.broadcast(userId, { type: 'created', payload: tripItem });
             return res.status(200).json(tripItem);
         }, 1000);
     }
@@ -136,7 +134,7 @@ class TripItemService {
             });
 
             setTimeout(() => {
-                this.broadcast({ event: 'updated', payload: { tripItem } });
+                this.socket.broadcast(userId, { type: 'updated', payload: updatedTripItem });
                 return res.status(200).json(updatedTripItem);
             }, 1000);
         }
@@ -144,13 +142,6 @@ class TripItemService {
             return res.status(400).json({message: err.message});
         }
     }
-
-    broadcast = data =>
-        this.wss.clients.forEach(client => {
-            if(client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify(data));
-            }
-        })
 }
 
 module.exports = TripItemService;

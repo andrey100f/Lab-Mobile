@@ -3,7 +3,7 @@ import {authConfig, baseUrl,  getLogger, withLogs} from "../utils";
 import {TripItemProps} from "./TripItemProps"
 
 const tripItemUrl = `http://${baseUrl}/trips`;
-const socketUrl = `localhost:8080`;
+const socketUrl = `localhost:8000`;
 
 export const getTripItems: (token: string) => Promise<TripItemProps[]> = (token) => {
     return withLogs(axios.get(tripItemUrl, authConfig(token)), "getTripItems");
@@ -18,18 +18,17 @@ export const updateTripItem: (token: string, tripItem: TripItemProps) => Promise
 }
 
 interface MessageData {
-    event: string;
-    payload: {
-        tripItem: TripItemProps;
-    };
+    type: string;
+    payload: TripItemProps;
 }
 
 const log = getLogger('ws');
 
-export const newWebSocket = (onMessage: (data: MessageData) => void) => {
+export const newWebSocket = (token: string, onMessage: (data: MessageData) => void) => {
     const ws = new WebSocket(`ws://${socketUrl}`)
     ws.onopen = () => {
         log('web socket onopen');
+        ws.send(JSON.stringify({ type: 'authorization', payload: { token } }));
     };
     ws.onclose = () => {
         log('web socket onclose');

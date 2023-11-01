@@ -7,34 +7,79 @@ import {
     IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonItem, IonList,
     IonLoading,
     IonPage, IonSearchbar, IonSelect, IonSelectOption,
-    IonTitle,
+    IonTitle, IonToast,
     IonToolbar,
 } from "@ionic/react";
 import TripItem from "./TripItem";
 import {getLogger, formatDate} from "../utils";
 import {add, fish} from "ionicons/icons";
-import React, {useContext, useMemo, useState} from "react";
+import React, {useContext, useEffect, useMemo, useState} from "react";
 import {RouteComponentProps} from "react-router";
 import {TripItemContext, TripItemProvider} from "./TripItemProvider";
-import {getTripItems} from "./tripItemApi";
-import {AuthContext} from "../auth";
 import {useNetwork} from "../utils/useNetwork";
+import {usePreferences} from "../utils/usePreferences";
+import {TripItemProps} from "./TripItemProps";
+import tripItem from "./TripItem";
 
 
 const log = getLogger('TripItemList');
 
 const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
-    const {token} = useContext(AuthContext);
-    let {tripItems, fetching, fetchingError} = useContext(TripItemContext);
+    const {get, set} = usePreferences();
+    const [token, setToken] = useState("");
+    useEffect(() => {
+        const getToken = async () => {
+            const result = await get("loginToken");
+            setToken(result!);
+        };
+
+        getToken();
+    }, []);
+
+    const [tripItems, setTripItems] = useState<TripItemProps[]>([]);
+    useEffect(() => {
+        const getTripItems = async () => {
+            const result = await get("tripItems");
+            setTripItems(JSON.parse(result!));
+        };
+
+        getTripItems();
+    }, []);
+
+    let {fetching, fetchingError} = useContext(TripItemContext);
     const [filter, setFilter] = useState<string>("");
     const [searchDestination, setSearchDestination] = useState<string>("");
     const {networkStatus} = useNetwork();
+    const [paginatedTripItems, setPaginatedTripItems] = useState<TripItemProps[]>([]);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [disableInfiniteScroll, setDisableInfiniteScroll] = useState<boolean>(false);
 
     log("render");
 
-    const handleLogOut = () => {
-        log("logout");
+    const handleLogOut = async () => {
+        await set("loginToken", "");
+        window.location.href = "/login";
     }
+
+    useEffect(() => {
+        getPaginatedTripItems();
+    }, []);
+
+    const searchNext = async ($event: CustomEvent<void>) => {
+        getPaginatedTripItems();
+        await ($event.target as HTMLIonInfiniteScrollElement).complete();
+    }
+
+    const getPaginatedTripItems = () => {
+        const newTripItems = tripItems.slice((currentPage - 1) * 5, currentPage * 5);
+        if(newTripItems.length > 0) {
+            setPaginatedTripItems(prevTripItems => [...prevTripItems, ...newTripItems]);
+            setCurrentPage(currentPage => currentPage + 1);
+        }
+        else {
+            setDisableInfiniteScroll(true);
+        }
+    };
 
     return (
         <IonPage>
@@ -47,7 +92,17 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
 
             <IonContent>
                 <IonItem>
-                    <IonChip className="ion-margin-start" color={networkStatus.connected ? "success" : "danger"} >{networkStatus.connected ? "Online" : "Offline"}</IonChip>
+                    <IonChip className="ion-margin-end" color={networkStatus.connected ? "success" : "danger"}>
+                        {networkStatus.connected ? "Online" : "Offline"}</IonChip>
+
+                    {networkStatus.connected && (
+                        <IonChip>The data will be updated</IonChip>
+                    )}
+
+                    {!networkStatus.connected && (
+                        <IonChip>The data will be saved locally</IonChip>
+                    )}
+
                     <IonButton className="ion-margin-end" slot="end" color="danger" size="small" fill="outline"
                                shape="round" onClick={handleLogOut}>Log Out</IonButton>
                 </IonItem>
@@ -58,9 +113,9 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
                 </IonSelect>
 
                 <IonLoading isOpen={fetching} message="Fetching Items" />
-                {tripItems && (
+                {paginatedTripItems && (
                     <IonList>
-                        {tripItems
+                        {paginatedTripItems
                             .filter(tripItem =>
                                 (!filter || tripItem.completed === filter) &&
                                 tripItem.destination.toLowerCase().indexOf(searchDestination.toLowerCase()) >= 0)
@@ -71,8 +126,16 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
                 )}
 
                 {fetchingError && (
-                    <div>{fetchingError.message || "Failed to fetch items"}</div>
+                    <IonToast isOpen={true} className="ion-color-danger" position="bottom" duration={2000}
+                              message={fetchingError.message || "Failed to fetch items"} ></IonToast>
                 )}
+
+                <IonInfiniteScroll threshold="100px" disabled={disableInfiniteScroll}
+                                   onIonInfinite={(e: CustomEvent<void>) => searchNext(e)}>
+                    <IonInfiniteScrollContent
+                        loadingText="Loading more good doggos...">
+                    </IonInfiniteScrollContent>
+                </IonInfiniteScroll>
 
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
                     <IonFabButton onClick={() => history.push('/trip')}>

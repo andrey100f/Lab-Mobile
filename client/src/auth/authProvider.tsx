@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useState} from "react";
 import PropTypes from "prop-types";
 import {getLogger} from "../utils";
 import {login as loginApi} from "./authApi";
+import {usePreferences} from "../utils/usePreferences";
 
 const log = getLogger("AuthProvider");
 
@@ -15,7 +16,6 @@ export interface AuthState {
     pendingAuthentication?: boolean;
     username?: string;
     password?: string;
-    token: string;
 }
 
 const initialState: AuthState = {
@@ -23,7 +23,6 @@ const initialState: AuthState = {
     isAuthenticating: false,
     authenticationError: null,
     pendingAuthentication: false,
-    token: "",
 };
 
 export const AuthContext = React.createContext<AuthState>(initialState);
@@ -33,13 +32,14 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
+    const {get, set} = usePreferences();
     const [state, setState] = useState<AuthState>(initialState);
-    const {isAuthenticated, isAuthenticating, authenticationError, pendingAuthentication, token} = state;
+    const {isAuthenticated, isAuthenticating, authenticationError, pendingAuthentication} = state;
     const login = useCallback<LoginFn>(loginCallback, []);
 
     useEffect(authenticationEffect, [pendingAuthentication]);
 
-    const value = {isAuthenticated, login, isAuthenticating, authenticationError, token};
+    const value = {isAuthenticated, login, isAuthenticating, authenticationError};
 
     log("render");
 
@@ -84,6 +84,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
 
                 const {username, password} = state;
                 const {token} = await loginApi(username, password);
+                await set("loginToken", token);
                 if(canceled) {
                     return;
                 }
@@ -92,7 +93,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
 
                 setState({
                     ...state,
-                    token,
                     pendingAuthentication: false,
                     isAuthenticated: true,
                     isAuthenticating: false

@@ -9,11 +9,12 @@ const UserController = require("./controllers/UserController");
 const TripItemService = require("./services/TripService");
 const UserService = require("./services/UserService");
 
-const socket = require("./utils/socket");
+const Socket = require("./utils/socket");
 
 const app = express();
 const wss = new WebSocket.Server({port: 8000});
-socket.initWss(wss);
+const socket = new Socket(wss);
+socket.initWss();
 
 app.use(express.json());
 app.use(cors({
@@ -24,7 +25,7 @@ app.listen(3000, () => {
     console.log("REST API running on http://localhost:3000");
 });
 
-const tripItemService = new TripItemService(wss);
+const tripItemService = new TripItemService(socket);
 const tripItemController = new TripItemController(tripItemService);
 tripItemController.setRouter();
 
