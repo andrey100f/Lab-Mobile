@@ -1,7 +1,7 @@
 export interface TripItemProps {
-    id?: string;
+    tripId?: string;
     destination: string;
     cost: number;
-    date: string;
-    completed: boolean;
+    tripDate: string;
+    completed: string;
 }

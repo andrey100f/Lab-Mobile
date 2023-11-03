@@ -1,59 +1,34 @@
 import axios from "axios";
-import {getLogger} from "../utils";
+import {authConfig, baseUrl,  getLogger, withLogs} from "../utils";
 import {TripItemProps} from "./TripItemProps"
 
-const log = getLogger("tripItemApi");
+const tripItemUrl = `http://${baseUrl}/trips`;
+const socketUrl = `localhost:8000`;
 
-const baseUrl = "http://localhost:3000";
-const socketUrl = "ws://localhost:8000";
-const tripItemUrl = `${baseUrl}/trips`;
-
-interface ResponseProps<T> {
-    data: T;
+export const getTripItems: (token: string) => Promise<TripItemProps[]> = (token) => {
+    return withLogs(axios.get(tripItemUrl, authConfig(token)), "getTripItems");
 }
 
-function withLogs<T>(promise: Promise<ResponseProps<T>>, fnName: string): Promise<T> {
-    log(`${fnName} - started`);
-    return promise
-        .then(res => {
-            log(`${fnName} - succeeded`);
-            return Promise.resolve(res.data);
-        })
-        .catch(err => {
-            log(`${fnName} - failed`);
-            return Promise.reject(err);
-        });
+export const createTripItem: (token: string, tripItem: TripItemProps) => Promise<TripItemProps[]> = (token, tripItem) => {
+    return withLogs(axios.post(tripItemUrl, tripItem, authConfig(token)), "createTripItem");
 }
 
-const config = {
-    headers: {
-        'Content-Type': 'application/json'
-    }
-};
-
-export const getTripItems: () => Promise<TripItemProps[]> = () => {
-    return withLogs(axios.get(tripItemUrl, config), 'getTripItems');
-}
-
-export const createTripItem: (tripItem: TripItemProps) => Promise<TripItemProps[]> = tripItem => {
-    return withLogs(axios.post(tripItemUrl, tripItem, config), 'createTripItem');
-}
-
-export const updateTripItem: (tripItem: TripItemProps) => Promise<TripItemProps[]> = tripItem => {
-    return withLogs(axios.put(`${tripItemUrl}/${tripItem.id}`, tripItem, config), 'updateTripItem');
+export const updateTripItem: (token: string, tripItem: TripItemProps) => Promise<TripItemProps[]> = (token, tripItem) => {
+    return withLogs(axios.put(`${tripItemUrl}/${tripItem.tripId}`, tripItem, authConfig(token)), "updateTripItem");
 }
 
 interface MessageData {
-    event: string;
-    payload: {
-        tripItem: TripItemProps;
-    };
+    type: string;
+    payload: TripItemProps;
 }
 
-export const newWebSocket = (onMessage: (data: MessageData) => void) => {
-    const ws = new WebSocket(socketUrl);
+const log = getLogger('ws');
+
+export const newWebSocket = (token: string, onMessage: (data: MessageData) => void) => {
+    const ws = new WebSocket(`ws://${socketUrl}`)
     ws.onopen = () => {
         log('web socket onopen');
+        ws.send(JSON.stringify({ type: 'authorization', payload: { token } }));
     };
     ws.onclose = () => {
         log('web socket onclose');
