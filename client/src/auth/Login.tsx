@@ -2,7 +2,6 @@ import React, {useCallback, useContext, useEffect, useState} from "react";
 import {RouteComponentProps} from "react-router";
 import {
     IonButton,
-    IonCard,
     IonContent,
     IonHeader,
     IonInput,
@@ -15,7 +14,6 @@ import {
 import {AuthContext} from "./authProvider";
 import {getLogger} from "../utils";
 import {usePreferences} from "../utils/usePreferences";
-import {getTripItems} from "../trip/tripItemApi";
 
 const log = getLogger("Login");
 
@@ -60,28 +58,12 @@ export const Login: React.FC<RouteComponentProps> = ({history}) => {
 
     log("render");
 
-    // useEffect(() => {
-    //     if(isAuthenticated) {
-    //         log("redirecting to home");
-    //         history.push("/");
-    //     }
-    // }, [isAuthenticated]);
-
     useEffect(() => {
         if(isAuthenticated || token !== "") {
             log("redirecting to home");
             history.push("/");
         }
     }, [isAuthenticated, token]);
-
-    // const useTokenEffect = () => {
-    //     if(isAuthenticated || token !== "") {
-    //         log("redirecting to home");
-    //         history.push("/");
-    //     }
-    // }
-    //
-    // useEffect(useTokenEffect, [token, isAuthenticated]);
 
     return (
         <IonPage>
@@ -99,7 +81,7 @@ export const Login: React.FC<RouteComponentProps> = ({history}) => {
                     </IonItem>
                     <IonItem>
                         <IonLabel position="floating">Password</IonLabel>
-                        <IonInput value={password} onIonChange={handlePasswordChange}/>
+                        <IonInput type="password" value={password} onIonChange={handlePasswordChange}/>
                     </IonItem>
                     <IonButton className="ion-margin-top" expand="block" shape="round" fill="outline" onClick={handleLogin}>Login</IonButton>
                 </div>

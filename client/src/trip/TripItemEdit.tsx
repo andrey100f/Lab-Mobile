@@ -1,8 +1,8 @@
-import {formatDate, getLogger} from "../utils";
+import {getLogger} from "../utils";
 import {TripItemContext} from "./TripItemProvider";
 import {TripItemProps} from "./TripItemProps";
 import {RouteComponentProps} from "react-router";
-import React, {useCallback, useContext, useEffect, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {
     IonButton,
     IonButtons,
@@ -58,11 +58,6 @@ const TripItemEdit: React.FC<TripItemEditProps> = ({history, match}) => {
             setTripDate(tripItem.tripDate);
         }
     }, [match.params.id, tripItems]);
-
-    // const handleSave = useCallback(() => {
-    //     const editedTripItem = tripItem ? {...tripItem, destination, cost, completed, tripDate} : {destination, cost, completed, tripDate};
-    //     saveTripItem && saveTripItem(editedTripItem).then(() => history.goBack());
-    // }, [tripItem, saveTripItem, destination, cost, completed, tripDate, history]);
 
     const handleSave = () => {
         const editedTripItem = tripItem ? {...tripItem, destination, cost, completed, tripDate} : {destination, cost, completed, tripDate};

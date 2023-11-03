@@ -1,5 +1,5 @@
 import {
-    IonButton, IonButtons, IonChip,
+    IonButton, IonChip,
     IonContent,
     IonFab,
     IonFabButton,
@@ -12,14 +12,13 @@ import {
 } from "@ionic/react";
 import TripItem from "./TripItem";
 import {getLogger, formatDate} from "../utils";
-import {add, fish} from "ionicons/icons";
+import {add} from "ionicons/icons";
 import React, {useContext, useEffect, useMemo, useState} from "react";
 import {RouteComponentProps} from "react-router";
-import {TripItemContext, TripItemProvider} from "./TripItemProvider";
+import {TripItemContext} from "./TripItemProvider";
 import {useNetwork} from "../utils/useNetwork";
 import {usePreferences} from "../utils/usePreferences";
 import {TripItemProps} from "./TripItemProps";
-import tripItem from "./TripItem";
 
 
 const log = getLogger('TripItemList');
