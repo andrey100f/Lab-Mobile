@@ -27,6 +27,14 @@ const log = getLogger('TripItemList');
 const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
     const {get, set} = usePreferences();
     const [token, setToken] = useState("");
+    const [tripItems, setTripItems] = useState<TripItemProps[]>([]);
+
+    let {fetching, fetchingError} = useContext(TripItemContext);
+    const [filter, setFilter] = useState<string>("");
+    const [searchDestination, setSearchDestination] = useState<string>("");
+    const {networkStatus} = useNetwork();
+    const [currentPage, setCurrentPage] = useState(1);
+
     useEffect(() => {
         const getToken = async () => {
             const result = await get("loginToken");
@@ -36,7 +44,6 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
         getToken();
     }, []);
 
-    const [tripItems, setTripItems] = useState<TripItemProps[]>([]);
     useEffect(() => {
         const getTripItems = async () => {
             const result = await get("tripItems");
@@ -46,14 +53,6 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
         getTripItems();
     }, []);
 
-    let {fetching, fetchingError} = useContext(TripItemContext);
-    const [filter, setFilter] = useState<string>("");
-    const [searchDestination, setSearchDestination] = useState<string>("");
-    const {networkStatus} = useNetwork();
-    const [paginatedTripItems, setPaginatedTripItems] = useState<TripItemProps[]>([]);
-    const [currentPage, setCurrentPage] = useState(0);
-    const [disableInfiniteScroll, setDisableInfiniteScroll] = useState<boolean>(false);
-
     log("render");
 
     const handleLogOut = async () => {
@@ -61,25 +60,18 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
         window.location.href = "/login";
     }
 
+    const getPaginatedTripItems = async () => {
+        const tripItemsString = await get("tripItems");
+        const newTripItems = JSON.parse(tripItemsString!).slice((currentPage - 1) * 5, currentPage * 5);
+        if(newTripItems!.length > 0) {
+            setTripItems([...tripItems, ...newTripItems]);
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
     useEffect(() => {
         getPaginatedTripItems();
     }, []);
-
-    const searchNext = async ($event: CustomEvent<void>) => {
-        getPaginatedTripItems();
-        await ($event.target as HTMLIonInfiniteScrollElement).complete();
-    }
-
-    const getPaginatedTripItems = () => {
-        const newTripItems = tripItems.slice((currentPage - 1) * 5, currentPage * 5);
-        if(newTripItems.length > 0) {
-            setPaginatedTripItems(prevTripItems => [...prevTripItems, ...newTripItems]);
-            setCurrentPage(currentPage => currentPage + 1);
-        }
-        else {
-            setDisableInfiniteScroll(true);
-        }
-    };
 
     return (
         <IonPage>
@@ -113,9 +105,9 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
                 </IonSelect>
 
                 <IonLoading isOpen={fetching} message="Fetching Items" />
-                {paginatedTripItems && (
+                {tripItems && (
                     <IonList>
-                        {paginatedTripItems
+                        {tripItems
                             .filter(tripItem =>
                                 (!filter || tripItem.completed === filter) &&
                                 tripItem.destination.toLowerCase().indexOf(searchDestination.toLowerCase()) >= 0)
@@ -130,11 +122,15 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
                               message={fetchingError.message || "Failed to fetch items"} ></IonToast>
                 )}
 
-                <IonInfiniteScroll threshold="100px" disabled={disableInfiniteScroll}
-                                   onIonInfinite={(e: CustomEvent<void>) => searchNext(e)}>
-                    <IonInfiniteScrollContent
-                        loadingText="Loading more good doggos...">
-                    </IonInfiniteScrollContent>
+                <IonInfiniteScroll
+                    onIonInfinite={(ev) => {
+                        setTimeout(() => {
+                            getPaginatedTripItems();
+                        }, 1000);
+                        setTimeout(() => ev.target.complete(), 500);
+                    }}
+                >
+                    <IonInfiniteScrollContent></IonInfiniteScrollContent>
                 </IonInfiniteScroll>
 
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
