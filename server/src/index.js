@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 
 const WebSocket = require("ws");
-const {WebSocketServer} = require("ws");
 
 const TripItemController = require("./controllers/TripItemController");
 const UserController = require("./controllers/UserController");

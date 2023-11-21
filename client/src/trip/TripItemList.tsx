@@ -13,7 +13,7 @@ import {
 import TripItem from "./TripItem";
 import {getLogger, formatDate} from "../utils";
 import {add} from "ionicons/icons";
-import React, {useContext, useEffect, useMemo, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {RouteComponentProps} from "react-router";
 import {TripItemContext} from "./TripItemProvider";
 import {useNetwork} from "../utils/useNetwork";
