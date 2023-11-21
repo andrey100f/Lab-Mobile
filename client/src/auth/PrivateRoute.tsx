@@ -1,10 +1,8 @@
 import React, {useContext, useEffect, useState} from "react";
-import PropTypes from "prop-types";
 import {Redirect, Route} from "react-router-dom";
 import {AuthContext, AuthState} from "./authProvider";
 import {getLogger} from "../utils";
 import {usePreferences} from "../utils/usePreferences";
-import {TripItemProps} from "../trip/TripItemProps";
 
 const log = getLogger("Login");
 
@@ -30,15 +28,6 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({component: Component,
     }, []);
 
     log("render, isAuthenticated" + isAuthenticated);
-
-    // return (
-    //     <Route {...rest} render={props => {
-    //         if(isAuthenticated) {
-    //             return <Component {...props} />
-    //         }
-    //         return <Redirect to={{pathname: "/login"}} />
-    //     }}/>
-    // );
 
     return (
         <Route {...rest} render={props => {

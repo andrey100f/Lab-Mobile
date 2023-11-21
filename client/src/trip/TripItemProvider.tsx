@@ -1,12 +1,10 @@
-import React, {useCallback, useContext, useEffect, useReducer, useState} from "react";
+import React, {useCallback, useEffect, useReducer, useState} from "react";
 import PropTypes from "prop-types";
 import {getLogger} from "../utils";
 import {TripItemProps} from "./TripItemProps";
 import {createTripItem, getTripItems, updateTripItem, newWebSocket} from "./tripItemApi";
-import {AuthContext} from "../auth";
 import {usePreferences} from "../utils/usePreferences";
 import {useNetwork} from "../utils/useNetwork";
-import {save} from "ionicons/icons";
 
 const log = getLogger("TripItemProvider");
 
@@ -134,23 +132,6 @@ export const TripItemProvider: React.FC<TripItemProviderProps> = ({children}) =>
                 dispatch({type: FETCH_TRIP_ITEMS_STARTED});
 
                 if(networkStatus) {
-                //     if(!tripItems) {
-                //         const tripItems = await getTripItems(token);
-                //         await set("tripItems", JSON.stringify(tripItems));
-                //     }
-                //     else {
-                //         tripItems.forEach(tripItem => {
-                //             if(tripItem.tripId) {
-                //                 updateTripItem(token, tripItem);
-                //             }
-                //             else {
-                //                 createTripItem(token, tripItem);
-                //             }
-                //         });
-                //         await set("tripItems", JSON.stringify(tripItems));
-                //     }
-
-
                     const tripItemsToken = await getTripItems(token);
                     if(tripItemsToken[0].tripId !== tripItems[0].tripId) {
                         await set("tripItems", JSON.stringify(tripItemsToken));
