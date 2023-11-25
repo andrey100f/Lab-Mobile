@@ -16,6 +16,8 @@ model trips {
   cost        Int
   tripDate    DateTime @db.Date
   completed   String   @db.VarChar(255)
+  latitude    Decimal? @db.Decimal(9, 6)
+  longitude   Decimal? @db.Decimal(9, 6)
   users       users    @relation(fields: [userId], references: [userId], onDelete: Cascade, map: "FK_users_trips")
 
   @@schema("tma_schema")
