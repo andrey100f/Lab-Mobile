@@ -74,13 +74,6 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
         getPaginatedTripItems();
     }, []);
 
-    const loadItems = () => {
-        if(!loaded) {
-            window.location.href = "/trips";
-            setLoaded(true);
-        }
-    }
-
     return (
         <IonPage>
             <IonHeader>
@@ -118,9 +111,9 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
                             .filter(tripItem =>
                                 (!filter || tripItem.completed === filter) &&
                                 tripItem.destination.toLowerCase().indexOf(searchDestination.toLowerCase()) >= 0)
-                            .map(({tripId, destination, cost, tripDate, completed}) =>
+                            .map(({tripId, destination, cost, tripDate, completed, latitude, longitude}) =>
                             <TripItem key={tripId} tripId={tripId} destination={destination} cost={cost} tripDate={formatDate(tripDate)} completed={completed}
-                            onEdit={tripId => history.push(`/trip/${tripId}`)}/> )}
+                                      latitude={latitude} longitude={longitude} onEdit={tripId => history.push(`/trip/${tripId}`)}/> )}
                     </IonList>
                 )}
 
@@ -137,6 +130,7 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
                         setTimeout(() => ev.target.complete(), 500);
                     }}
                 >
+                    <IonInfiniteScrollContent></IonInfiniteScrollContent>
                 </IonInfiniteScroll>
 
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
