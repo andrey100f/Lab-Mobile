@@ -9,16 +9,18 @@ import {
     IonPage, IonSearchbar, IonSelect, IonSelectOption,
     IonTitle, IonToast,
     IonToolbar,
+    CreateAnimation, createAnimation
 } from "@ionic/react";
 import TripItem from "./TripItem";
 import {getLogger, formatDate} from "../utils";
 import {add} from "ionicons/icons";
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import {RouteComponentProps} from "react-router";
 import {TripItemContext} from "./TripItemProvider";
 import {useNetwork} from "../utils/useNetwork";
 import {usePreferences} from "../utils/usePreferences";
 import {TripItemProps} from "./TripItemProps";
+import "./styles/main.css";
 
 
 const log = getLogger('TripItemList');
@@ -33,7 +35,7 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
     const [searchDestination, setSearchDestination] = useState<string>("");
     const {networkStatus} = useNetwork();
     const [currentPage, setCurrentPage] = useState(1);
-    const [loaded, setLoaded] = useState(false);
+    const animationRef = useRef<CreateAnimation>(null);
 
     useEffect(() => {
         const getToken = async () => {
@@ -74,25 +76,59 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
         getPaginatedTripItems();
     }, []);
 
+    useEffect(simpleAnimationJS, []);
+
+    function simpleAnimationJS() {
+        const el = document.querySelector("[data-title]");
+        if (el) {
+            const animation = createAnimation()
+                .addElement(el)
+                .duration(5000)
+                .direction("alternate")
+                .iterations(Infinity)
+                .keyframes([
+                    { offset: 0, transform: "scale(3)", opacity: "1" },
+                    { offset: 0.5, transform: "scale(1.5)", opacity: "1" },
+                    {
+                        offset: 1,
+                        transform: "scale(0.5)",
+                        opacity: "0.2",
+                    },
+                ]);
+            animation.play();
+        }
+    }
+
     return (
         <IonPage>
             <IonHeader>
                 <IonToolbar>
-                    <IonTitle slot="start">Travel Management App</IonTitle>
+                    <CreateAnimation
+                        ref={animationRef}
+                        duration={5000}
+                        fromTo={{
+                            property: "transform",
+                            fromValue: "translateY(0) rotate(0)",
+                            toValue: `translateY(200px) rotate(180deg)`,
+                        }}
+                        easing="ease-out"
+                    >
+                        <IonTitle data-title slot="start">Travel Management App</IonTitle>
+                    </CreateAnimation>
                 </IonToolbar>
             </IonHeader>
 
             <IonContent>
                 <IonItem>
-                    <IonChip className="ion-margin-end" color={networkStatus.connected ? "success" : "danger"}>
+                    <IonChip className="ion-margin-end data-chip" color={networkStatus.connected ? "success" : "danger"}>
                         {networkStatus.connected ? "Online" : "Offline"}</IonChip>
 
                     {networkStatus.connected && (
-                        <IonChip>The data will be updated</IonChip>
+                        <IonChip className="data-chip">The data will be updated</IonChip>
                     )}
 
                     {!networkStatus.connected && (
-                        <IonChip>The data will be saved locally</IonChip>
+                        <IonChip className="data-chip" data-chip>The data will be saved locally</IonChip>
                     )}
 
                     <IonButton className="ion-margin-end" slot="end" color="danger" size="small" fill="outline"

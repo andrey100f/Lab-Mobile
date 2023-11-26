@@ -1,0 +1,8 @@
+.data-chip {
+    animation: none !important;
+}
+
+.data-chip:hover {
+    transform: scale(1.5);
+    transition: transform 0.3s ease-in-out;
+}
