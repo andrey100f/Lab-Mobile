@@ -54,6 +54,7 @@ export const Login: React.FC<RouteComponentProps> = ({history}) => {
         log("handleLogIn...");
         login?.(username, password);
         window.location.href = "/trips";
+
     }, [username, password, token]);
 
     log("render");

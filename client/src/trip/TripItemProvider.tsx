@@ -103,7 +103,7 @@ export const TripItemProvider: React.FC<TripItemProviderProps> = ({children}) =>
     useEffect(wsEffect, [token]);
 
     const saveTripItem = useCallback<SaveTripItemFn>(saveTripItemCallback, [token]);
-    const value = {fetching, fetchingError, saving, savingError, saveTripItem};
+    const value = {fetching, fetchingError, tripItems, saving, savingError, saveTripItem};
 
     log("returns");
 
@@ -133,6 +133,7 @@ export const TripItemProvider: React.FC<TripItemProviderProps> = ({children}) =>
 
                 if(networkStatus) {
                     const tripItemsToken = await getTripItems(token);
+                    setTripItems(tripItemsToken);
                     if(tripItemsToken[0].tripId !== tripItems[0].tripId) {
                         await set("tripItems", JSON.stringify(tripItemsToken));
                     }
@@ -177,13 +178,14 @@ export const TripItemProvider: React.FC<TripItemProviderProps> = ({children}) =>
             } else {
                 tripItems[index] = tripItem;
             }
-            await set("tripItems", JSON.stringify(tripItems));
 
             if(networkStatus) {
                 const savedTripItem = await (tripItem.tripId ? updateTripItem(token!, tripItem) : createTripItem(token!, tripItem));
+                await set("tripItems", JSON.stringify(tripItems));
                 dispatch({ type: SAVE_TRIP_ITEMS_SUCCEEDED, payload: { tripItem: savedTripItem } });
             }
             else {
+                await set("tripItems", JSON.stringify(tripItems));
                 dispatch({ type: SAVE_TRIP_ITEMS_SUCCEEDED, payload: { tripItem: tripItems } });
             }
 

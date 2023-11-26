@@ -4,4 +4,6 @@ export interface TripItemProps {
     cost: number;
     tripDate: string;
     completed: string;
+    latitude: number;
+    longitude: number;
 }

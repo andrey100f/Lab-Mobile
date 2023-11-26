@@ -32,7 +32,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({children}) => {
-    const {get, set} = usePreferences();
+    const {set} = usePreferences();
     const [state, setState] = useState<AuthState>(initialState);
     const {isAuthenticated, isAuthenticating, authenticationError, pendingAuthentication} = state;
     const login = useCallback<LoginFn>(loginCallback, []);

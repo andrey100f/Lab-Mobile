@@ -9,30 +9,33 @@ import {
     IonPage, IonSearchbar, IonSelect, IonSelectOption,
     IonTitle, IonToast,
     IonToolbar,
+    CreateAnimation, createAnimation
 } from "@ionic/react";
 import TripItem from "./TripItem";
 import {getLogger, formatDate} from "../utils";
 import {add} from "ionicons/icons";
-import React, {useContext, useEffect, useMemo, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import {RouteComponentProps} from "react-router";
 import {TripItemContext} from "./TripItemProvider";
 import {useNetwork} from "../utils/useNetwork";
 import {usePreferences} from "../utils/usePreferences";
 import {TripItemProps} from "./TripItemProps";
+import "./styles/main.css";
 
 
 const log = getLogger('TripItemList');
 
+
 const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
     const {get, set} = usePreferences();
     const [token, setToken] = useState("");
+    let {fetching, fetchingError, tripItems: tripItemsOnline} = useContext(TripItemContext);
     const [tripItems, setTripItems] = useState<TripItemProps[]>([]);
-
-    let {fetching, fetchingError} = useContext(TripItemContext);
     const [filter, setFilter] = useState<string>("");
     const [searchDestination, setSearchDestination] = useState<string>("");
     const {networkStatus} = useNetwork();
     const [currentPage, setCurrentPage] = useState(1);
+    const animationRef = useRef<CreateAnimation>(null);
 
     useEffect(() => {
         const getToken = async () => {
@@ -45,7 +48,7 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
 
     useEffect(() => {
         const getTripItems = async () => {
-            const result = await get("tripItems");
+            let result = await get("tripItems");
             setTripItems(JSON.parse(result!));
         };
 
@@ -62,6 +65,7 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
     const getPaginatedTripItems = async () => {
         const tripItemsString = await get("tripItems");
         const newTripItems = JSON.parse(tripItemsString!).slice((currentPage - 1) * 5, currentPage * 5);
+
         if(newTripItems!.length > 0) {
             setTripItems([...tripItems, ...newTripItems]);
             setCurrentPage(currentPage + 1);
@@ -72,26 +76,59 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
         getPaginatedTripItems();
     }, []);
 
+    useEffect(simpleAnimationJS, []);
+
+    function simpleAnimationJS() {
+        const el = document.querySelector("[data-title]");
+        if (el) {
+            const animation = createAnimation()
+                .addElement(el)
+                .duration(5000)
+                .direction("alternate")
+                .iterations(Infinity)
+                .keyframes([
+                    { offset: 0, transform: "scale(3)", opacity: "1" },
+                    { offset: 0.5, transform: "scale(1.5)", opacity: "1" },
+                    {
+                        offset: 1,
+                        transform: "scale(0.5)",
+                        opacity: "0.2",
+                    },
+                ]);
+            animation.play();
+        }
+    }
+
     return (
         <IonPage>
             <IonHeader>
                 <IonToolbar>
-                    <IonTitle slot="start">Travel Management App</IonTitle>
+                    <CreateAnimation
+                        ref={animationRef}
+                        duration={5000}
+                        fromTo={{
+                            property: "transform",
+                            fromValue: "translateY(0) rotate(0)",
+                            toValue: `translateY(200px) rotate(180deg)`,
+                        }}
+                        easing="ease-out"
+                    >
+                        <IonTitle data-title slot="start">Travel Management App</IonTitle>
+                    </CreateAnimation>
                 </IonToolbar>
-
             </IonHeader>
 
             <IonContent>
                 <IonItem>
-                    <IonChip className="ion-margin-end" color={networkStatus.connected ? "success" : "danger"}>
+                    <IonChip className="ion-margin-end data-chip" color={networkStatus.connected ? "success" : "danger"}>
                         {networkStatus.connected ? "Online" : "Offline"}</IonChip>
 
                     {networkStatus.connected && (
-                        <IonChip>The data will be updated</IonChip>
+                        <IonChip className="data-chip">The data will be updated</IonChip>
                     )}
 
                     {!networkStatus.connected && (
-                        <IonChip>The data will be saved locally</IonChip>
+                        <IonChip className="data-chip" data-chip>The data will be saved locally</IonChip>
                     )}
 
                     <IonButton className="ion-margin-end" slot="end" color="danger" size="small" fill="outline"
@@ -110,9 +147,9 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
                             .filter(tripItem =>
                                 (!filter || tripItem.completed === filter) &&
                                 tripItem.destination.toLowerCase().indexOf(searchDestination.toLowerCase()) >= 0)
-                            .map(({tripId, destination, cost, tripDate, completed}) =>
+                            .map(({tripId, destination, cost, tripDate, completed, latitude, longitude}) =>
                             <TripItem key={tripId} tripId={tripId} destination={destination} cost={cost} tripDate={formatDate(tripDate)} completed={completed}
-                            onEdit={tripId => history.push(`/trip/${tripId}`)}/> )}
+                                      latitude={latitude} longitude={longitude} onEdit={tripId => history.push(`/trip/${tripId}`)}/> )}
                     </IonList>
                 )}
 

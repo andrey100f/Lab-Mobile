@@ -8,23 +8,6 @@ class TripItemService {
         this.socket = socket;
     }
 
-    getAllTripItems = async (req, res) => {
-        try {
-            const tripItems = await prisma.trips.findMany();
-
-            if(!tripItems) {
-                return res.status(404).json({error: "No trips found..."});
-            }
-
-            setTimeout(() => {
-                return res.status(200).json(tripItems);
-            }, 1000);
-        }
-        catch (err) {
-            return res.status(400).json({message: err.message});
-        }
-    }
-
     getTripItemsByUserId = async (req, res) => {
         try {
             const token = req.headers.authorization.split(' ')[1];
