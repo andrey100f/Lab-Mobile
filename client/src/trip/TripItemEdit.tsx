@@ -27,6 +27,7 @@ const TripItemEdit: React.FC<TripItemEditProps> = ({history, match}) => {
     const {networkStatus} = useNetwork();
     const {get} = usePreferences();
     const [tripItems, setTripItems] = useState<TripItemProps[]>([]);
+
     useEffect(() => {
         const getTripItems = async () => {
             const result = await get("tripItems");
@@ -67,6 +68,7 @@ const TripItemEdit: React.FC<TripItemEditProps> = ({history, match}) => {
         else {
             history.goBack();
         }
+        window.location.reload();
     }
 
     log('render');

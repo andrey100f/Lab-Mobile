@@ -23,16 +23,17 @@ import {TripItemProps} from "./TripItemProps";
 
 const log = getLogger('TripItemList');
 
+
 const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
     const {get, set} = usePreferences();
     const [token, setToken] = useState("");
+    let {fetching, fetchingError, tripItems: tripItemsOnline} = useContext(TripItemContext);
     const [tripItems, setTripItems] = useState<TripItemProps[]>([]);
-
-    let {fetching, fetchingError} = useContext(TripItemContext);
     const [filter, setFilter] = useState<string>("");
     const [searchDestination, setSearchDestination] = useState<string>("");
     const {networkStatus} = useNetwork();
     const [currentPage, setCurrentPage] = useState(1);
+    const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
         const getToken = async () => {
@@ -45,7 +46,7 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
 
     useEffect(() => {
         const getTripItems = async () => {
-            const result = await get("tripItems");
+            let result = await get("tripItems");
             setTripItems(JSON.parse(result!));
         };
 
@@ -62,6 +63,7 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
     const getPaginatedTripItems = async () => {
         const tripItemsString = await get("tripItems");
         const newTripItems = JSON.parse(tripItemsString!).slice((currentPage - 1) * 5, currentPage * 5);
+
         if(newTripItems!.length > 0) {
             setTripItems([...tripItems, ...newTripItems]);
             setCurrentPage(currentPage + 1);
@@ -72,13 +74,19 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
         getPaginatedTripItems();
     }, []);
 
+    const loadItems = () => {
+        if(!loaded) {
+            window.location.href = "/trips";
+            setLoaded(true);
+        }
+    }
+
     return (
         <IonPage>
             <IonHeader>
                 <IonToolbar>
                     <IonTitle slot="start">Travel Management App</IonTitle>
                 </IonToolbar>
-
             </IonHeader>
 
             <IonContent>
@@ -129,7 +137,6 @@ const TripItemList: React.FC<RouteComponentProps> = ({history}) => {
                         setTimeout(() => ev.target.complete(), 500);
                     }}
                 >
-                    <IonInfiniteScrollContent></IonInfiniteScrollContent>
                 </IonInfiniteScroll>
 
                 <IonFab vertical="bottom" horizontal="end" slot="fixed">
